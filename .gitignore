@@ -1,0 +1,6 @@
+__pycache__/
+forms/__pycache__/
+env/
+data.db
+TODO
+initenv.sh
