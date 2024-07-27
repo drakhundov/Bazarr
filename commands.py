@@ -30,7 +30,7 @@ def exec_new_cmd(upd: Dict):
 
 
 def exec_delete_cmd(upd: Dict):
-    for product in data.Product.filter_({"seller_tg_id":upd["user_id"]}):
+    for product in data.Product.filter_({"seller_tg_id": upd["user_id"]}):
         data.Product.send_to_user(product, upd["chat_id"], send_product_id=True)
     form = forms.start(upd["user_id"], forms.DELETE_PRODUCT_FORM)
     form.prompt_field(form.get_cur_field(), upd["chat_id"])
@@ -42,7 +42,7 @@ def exec_search_cmd(upd: Dict):
 
 
 def exec_myproducts_cmd(upd: Dict):
-    products_found = data.Product.filter_({"seller_tg_id":upd["user_id"]})
+    products_found = data.Product.filter_({"seller_tg_id": upd["user_id"]})
     if not products_found:
         server.send_message(
             text="You don't have any products yet. To add a product type <i> /new </i>",
