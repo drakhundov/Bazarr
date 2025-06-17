@@ -1,3 +1,4 @@
+from typing import Callable, Optional, Dict
 import sys
 import time
 
@@ -5,7 +6,7 @@ import data
 import server
 
 
-def run(handle_update: callable):
+def run(handle_update: Callable):
     """
     Runs the bot and deals with updates. Stops on keyboard interruption.
 
@@ -29,7 +30,7 @@ def run(handle_update: callable):
             time.sleep(0.01)
 
 
-def _parse_update(upd: dict) -> dict:
+def _parse_update(upd: Dict) -> Optional[Dict]:
     """
     Receives a Telegram Bot API update as a dictionary and
     returns the most important data out of it.

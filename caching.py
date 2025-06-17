@@ -18,4 +18,3 @@ def cache(cache_type: int, value, _id: int):
 def retrieve(cache_type: int, _id: int):
     if cache_type == IMAGE:
         return _cache["images"].get(_id)
-    

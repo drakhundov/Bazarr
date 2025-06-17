@@ -1,3 +1,4 @@
+from typing import Optional, Union, Dict
 import os
 
 import requests
@@ -14,8 +15,15 @@ GETFILE_URL = f"{os.getenv('GETFILE_API_URL')}{os.getenv('TOKEN')}"
 # Standard HTTP methods (GET, POST) matched to
 # Telegram Bot API methods that will be used.
 HTTP_METHODS = {
-    "GET": ("getUpdates", "getFile", "getChat",),
-    "POST": ("sendMessage", "sendPhoto",)
+    "GET": (
+        "getUpdates",
+        "getFile",
+        "getChat",
+    ),
+    "POST": (
+        "sendMessage",
+        "sendPhoto",
+    ),
 }
 
 HEADERS = {
@@ -23,7 +31,7 @@ HEADERS = {
 }
 
 
-def access(request: str, getfile: bool = False, files: dict = None, **args):
+def access(request: str, getfile: bool = False, files: Optional[Dict] = None, **args) -> Optional[Union[Dict, bytes]]:
     """
     Transfers information to and gets information from Telegram Bot API.
 
@@ -46,8 +54,8 @@ def access(request: str, getfile: bool = False, files: dict = None, **args):
         FileNotFoundError if server couldn't find the specified document.
     """
     if getfile:
-        url = f'{GETFILE_URL}/{request}'
-        response = requests.get(url,headers=HEADERS, stream=True)
+        url = f"{GETFILE_URL}/{request}"
+        response = requests.get(url, headers=HEADERS, stream=True)
         if response.status_code != 200:
             # If not found (error 404).
             if response.status_code == 404:
@@ -60,20 +68,20 @@ def access(request: str, getfile: bool = False, files: dict = None, **args):
             file += chunk
         return file
     # Query is a method.
-    url = f'{API_URL}/{request}'
-    if request in HTTP_METHODS['GET']:
-        response = requests.get(url,headers=HEADERS, params=args)
-    elif request in HTTP_METHODS['POST']:
-        response = requests.post(url, data=args,headers=HEADERS, files=files)
+    url = f"{API_URL}/{request}"
+    if request in HTTP_METHODS["GET"]:
+        response = requests.get(url, headers=HEADERS, params=args)
+    elif request in HTTP_METHODS["POST"]:
+        response = requests.post(url, data=args, headers=HEADERS, files=files)
     else:
-        raise ValueError('Invalid method')
+        raise ValueError("Invalid method")
     data = response.json()
-    if data['ok']:  # No error occurred.
-        return data['result']
+    if data["ok"]:  # No error occurred.
+        return data["result"]
     response.raise_for_status()
 
 
-def get_updates(offset: int = None, limit: int = 100) -> list:
+def get_updates(offset: Optional[int] = None, limit: int = 100) -> Optional[Union[Dict, bytes]]:
     """
     Gets updates from the Telegram Bot API server (e.g. new messages from users).
 
@@ -85,10 +93,10 @@ def get_updates(offset: int = None, limit: int = 100) -> list:
     Returns:
         A list of recent updates.
     """
-    return access('getUpdates', offset=offset, limit=limit)
+    return access("getUpdates", offset=offset, limit=limit)
 
 
-def send_message(text: str, chat_id: int, parse_mode: str = None) -> dict:
+def send_message(text: str, chat_id: int, parse_mode: Optional[str] = None) -> Optional[Union[Dict, bytes]]:
     """
     Sends a message to a chat.
 
@@ -104,35 +112,37 @@ def send_message(text: str, chat_id: int, parse_mode: str = None) -> dict:
     Returns:
         The server's response as a dictionary.
     """
-    return access('sendMessage',
-                  text=text,
-                  chat_id=chat_id,
-                  parse_mode=parse_mode)
+    return access("sendMessage", text=text, chat_id=chat_id, parse_mode=parse_mode)
 
 
-def send_photo(photo: bytes, chat_id: int,
-               caption: str = None, parse_mode: str = None) -> dict:
-    return access('sendPhoto',
-                  files={'photo': photo},
-                  chat_id=chat_id,
-                  caption=caption,
-                  parse_mode=parse_mode)
+def send_photo(
+    photo: bytes, chat_id: int, caption: Optional[str] = None, parse_mode: Optional[str] = None
+) -> Optional[Union[Dict, bytes]]:
+    return access(
+        "sendPhoto",
+        files={"photo": photo},
+        chat_id=chat_id,
+        caption=caption,
+        parse_mode=parse_mode,
+    )
 
 
-def get_chat(chat_id: int) -> dict:
+def get_chat(chat_id: int) -> Optional[Union[Dict, bytes]]:
     """
     Obtains up-to-date information about the chat
     (e.g. a user's current username, user_id, etc.).
     """
-    return access('getChat', chat_id=chat_id)
+    return access("getChat", chat_id=chat_id)
 
 
-def get_file(file_id: int) -> str:
+def get_file(file_id: int) -> int:
     """
     When user sends a file, a unique file_id will be given to the bot.
     Using the id, this function can get the file from Telegram Bot API.
     """
-    file_path = access('getFile', file_id=file_id)['file_path']
+    api_response = access("getFile", file_id=file_id)
+    if api_response is None or isinstance(api_response, bytes) or (file_path := api_response.get("file_path")) is None:
+        return -1
     _bytes = access(file_path, getfile=True)
     caching.cache(caching.IMAGE, _bytes, _id=file_id)
     return file_id
