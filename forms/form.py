@@ -21,6 +21,7 @@ class Form:
             return self.fields[self.cur_field_no]
         raise IndexError("form.get_cur_field: `cur_field_no` out of range.")
 
+    @staticmethod
     def _set_field_value(self, field: Field, value: Any):
         """
         Mostly ensures the values set to the fields are of appropriate types.
@@ -57,6 +58,7 @@ class Form:
                 return False
         return True
 
+    @staticmethod
     def prompt_field(self, field: Field, chat_id: int):
         server.send_message(text=field.prompt, chat_id=chat_id)
 
